@@ -11,7 +11,7 @@ def download_audio(recording_url):
 
 def transcribe_with_whisper_api(audio_bytes):
     headers = {
-        "Authorization": f"Bearer {os.getenv("API_KEY_OPENAI")}"
+        "Authorization": f"Bearer {os.getenv('API_KEY_OPENAI')}"
     }
     files = {
         'file': ('audio.wav', audio_bytes, 'audio/wav'),
