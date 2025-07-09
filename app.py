@@ -49,6 +49,7 @@ def process_recording():
         tts_lang = "es-ES"
 
     translated_text = translate_text(transcript, target_lang)
+    print(f"Translated text: '{translated_text}'")
 
     response = VoiceResponse()
     response.say(translated_text, language=tts_lang)

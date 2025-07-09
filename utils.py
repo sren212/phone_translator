@@ -35,6 +35,8 @@ def translate_text(text, target_lang):
     }
     r = requests.get(url, params=params)
     translated_text = r.json()[0][0][0]
+    print("Google Translate raw response:", r.text)
+    print("Extracted translation:", translated_text)
     return translated_text
 
 def detect_language(text):
