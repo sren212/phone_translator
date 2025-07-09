@@ -2,6 +2,7 @@ from flask import Flask, request, Response
 from twilio.twiml.voice_response import VoiceResponse
 from utils import download_audio, transcribe_with_whisper_api, translate_text, detect_language
 import os
+import traceback
 
 app = Flask(__name__)
 
@@ -28,8 +29,10 @@ def process_recording():
     audio_data = download_audio(recording_url)
 
     try:
-        transcript = transcribe_with_whisper_api(audio_data)
+    transcript = transcribe_with_whisper_api(audio_data)
     except Exception as e:
+        print("Whisper transcription error:")
+        traceback.print_exc()
         response = VoiceResponse()
         response.say("Sorry, I could not understand you.")
         response.redirect("/voice")
