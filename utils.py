@@ -14,7 +14,7 @@ def transcribe_with_whisper_api(audio_bytes):
         "Authorization": f"Bearer {os.getenv('API_KEY_OPENAI')}"
     }
     files = {
-        'file': ('audio.wav', audio_bytes, 'audio/wav'),
+        'file': ('audio.mp3', audio_bytes, 'audio/mpeg'),
         'model': (None, 'whisper-1')
     }
     response = requests.post(
