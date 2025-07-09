@@ -29,7 +29,7 @@ def process_recording():
     audio_data = download_audio(recording_url)
 
     try:
-    transcript = transcribe_with_whisper_api(audio_data)
+        transcript = transcribe_with_whisper_api(audio_data)
     except Exception as e:
         print("Whisper transcription error:")
         traceback.print_exc()
