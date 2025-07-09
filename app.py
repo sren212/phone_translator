@@ -24,12 +24,11 @@ def voice():
 
 @app.route("/process_recording", methods=['POST'])
 def process_recording():
-    # recording_url = request.form['RecordingUrl']
-    # audio_data = download_audio(recording_url)
+    recording_url = request.form['RecordingUrl']
+    audio_data = download_audio(recording_url)
 
     try:
-        # transcript = transcribe_with_whisper_api(audio_data)
-        transcript = "Hello"  # Simulated
+        transcript = transcribe_with_whisper_api(audio_data)
     except Exception as e:
         response = VoiceResponse()
         response.say("Sorry, I could not understand you.")
@@ -45,12 +44,12 @@ def process_recording():
         target_lang = "en"
         tts_lang = "en-US"
     else:
+        # Default to Spanish if unknown
         target_lang = "es"
         tts_lang = "es-ES"
-    
-    print("📝 Transcript:", transcript)
+
     translated_text = translate_text(transcript, target_lang)
-    
+
     response = VoiceResponse()
     response.say(translated_text, language=tts_lang)
     response.redirect("/voice")
