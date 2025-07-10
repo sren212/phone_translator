@@ -6,7 +6,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def download_audio(recording_url):
-    resp = requests.get(recording_url)
+    twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
+    twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
+
+    resp = requests.get(recording_url, auth=(twilio_sid, twilio_token))
     resp.raise_for_status()
     return resp.content
 

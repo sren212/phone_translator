@@ -29,7 +29,7 @@ def process_recording():
     print(f"Received recording URL: {recording_url}")
     
     try:
-        audio_bytes_raw = download_audio(recording_url)  # No .mp3
+        audio_bytes_raw = download_audio(recording_url)
         audio_bytes_clean = convert_audio_to_mp3(audio_bytes_raw)
         transcript = transcribe_with_whisper_api(audio_bytes_clean)
     except Exception as e:
