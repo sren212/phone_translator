@@ -8,6 +8,7 @@ import io
 load_dotenv()
 
 def convert_audio_to_mp3(audio_bytes):
+    # Automatically detect input format from headers
     audio = AudioSegment.from_file(io.BytesIO(audio_bytes))
     out_io = io.BytesIO()
     audio.export(out_io, format="mp3")
@@ -16,6 +17,7 @@ def convert_audio_to_mp3(audio_bytes):
 
 def download_audio(recording_url):
     resp = requests.get(recording_url)
+    resp.raise_for_status()
     return resp.content
 
 def transcribe_with_whisper_api(audio_bytes):
@@ -33,12 +35,11 @@ def transcribe_with_whisper_api(audio_bytes):
     )
     print("OpenAI API response status:", response.status_code)
     print("OpenAI API response body:", response.text)
-    
+
     response_json = response.json()
     if 'text' not in response_json:
         raise ValueError(f"Missing 'text' in response: {response_json}")
     return response_json['text']
-
 
 def translate_text(text, target_lang):
     url = "https://translate.googleapis.com/translate_a/single"
