@@ -2,18 +2,8 @@ import requests
 from langdetect import detect
 import os
 from dotenv import load_dotenv
-from pydub import AudioSegment
-import io
 
 load_dotenv()
-
-def convert_audio_to_mp3(audio_bytes):
-    # Automatically detect input format from headers
-    audio = AudioSegment.from_file(io.BytesIO(audio_bytes))
-    out_io = io.BytesIO()
-    audio.export(out_io, format="mp3")
-    out_io.seek(0)
-    return out_io.read()
 
 def download_audio(recording_url):
     resp = requests.get(recording_url)
