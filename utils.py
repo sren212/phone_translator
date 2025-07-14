@@ -9,7 +9,10 @@ import tempfile
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def download_audio(recording_url):
-    resp = requests.get(recording_url + ".wav")
+    twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
+    twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
+    print(f"SID: {twilio_sid}, Token set: {bool(twilio_token)}")
+    resp = requests.get(recording_url, auth=(twilio_sid, twilio_token))
     resp.raise_for_status()
     return resp.content
 
