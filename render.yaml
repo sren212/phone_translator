@@ -11,3 +11,5 @@ services:
         sync: false
       - key: TWILIO_AUTH_TOKEN
         sync: false
+    build:
+      pythonVersion: 3.12.3

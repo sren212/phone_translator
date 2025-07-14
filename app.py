@@ -1,10 +1,10 @@
 from flask import Flask, request, Response
-from twilio.twiml.voice_response import VoiceResponse, Record, Play
+from twilio.twiml.voice_response import VoiceResponse
 from utils import (
     download_audio,
     convert_audio_to_mp3,
     transcribe_with_whisper_api,
-    translate_text,
+    translate_bidirectional,
     text_to_speech_twilio
 )
 import traceback
@@ -38,14 +38,11 @@ def process_recording():
         transcript = transcribe_with_whisper_api(mp3_bytes)
         print("Transcription:", transcript)
 
-        translated_text = translate_text(transcript)
-        print("Translation:", translated_text)
+        translated_text, lang = translate_bidirectional(transcript)
+        print(f"Detected: {lang}, Translation: {translated_text}")
 
-        audio_url = text_to_speech_twilio(translated_text)
-
-        response = VoiceResponse()
-        response.play(audio_url)
-        return Response(str(response), mimetype="text/xml")
+        twiml_response = text_to_speech_twilio(translated_text, lang=lang)
+        return Response(twiml_response, mimetype="text/xml")
 
     except Exception as e:
         traceback.print_exc()

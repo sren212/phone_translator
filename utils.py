@@ -25,22 +25,41 @@ def transcribe_with_whisper_api(audio_mp3_bytes):
     )
     return response.text
 
-def translate_text(text, target_lang="es"):
+def detect_language(text):
     response = openai.chat.completions.create(
         model="gpt-4",
         messages=[
-            {"role": "system", "content": f"Translate the following English text to {target_lang}."},
+            {"role": "system", "content": "Identify the language of the following sentence."},
             {"role": "user", "content": text}
         ]
     )
-    return response.choices[0].message.content.strip()
+    return response.choices[0].message.content.strip().lower()
 
-def text_to_speech_twilio(text):
-    # Create a TwiML Bin-like URL by generating a TwiML file
+def translate_bidirectional(text):
+    lang = detect_language(text)
+    if "spanish" in lang:
+        target_lang = "English"
+    elif "english" in lang:
+        target_lang = "Spanish"
+    else:
+        target_lang = "English"  # default fallback
+
+    response = openai.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": f"Translate this to {target_lang}."},
+            {"role": "user", "content": text}
+        ]
+    )
+    return response.choices[0].message.content.strip(), target_lang
+
+def text_to_speech_twilio(text, lang="Spanish"):
+    # Select Twilio-compatible voices
+    if lang.lower().startswith("spanish"):
+        voice = "Polly.Conchita"
+    else:
+        voice = "Polly.Joanna"
+
     response = VoiceResponse()
-    response.say(text, voice="Polly.Conchita")  # Use a Spanish voice or change language
-    twiml = str(response)
-
-    # Upload TwiML to a temporary server or prehost translated messages
-    # Here we simulate using Twilio’s <Say>, you can also pre-generate audio and host it
-    return f"https://handler.twilio.com/twiml/EHXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX?Body={text}"
+    response.say(text, voice=voice)
+    return str(response)
