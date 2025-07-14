@@ -13,6 +13,13 @@ def download_audio(recording_url):
     resp.raise_for_status()
     return resp.content
 
+def convert_audio_to_mp3(audio_bytes):
+    audio = AudioSegment.from_file(io.BytesIO(audio_bytes))
+    out_io = io.BytesIO()
+    audio.export(out_io, format="mp3")
+    out_io.seek(0)
+    return out_io.read()
+
 def transcribe_with_whisper_api(audio_bytes):
     headers = {
         "Authorization": f"Bearer {os.getenv('API_KEY_OPENAI')}"
