@@ -2,7 +2,7 @@ from flask import Flask, request, Response
 from twilio.twiml.voice_response import VoiceResponse
 from utils import download_audio, transcribe_with_whisper_api, translate_text, detect_language, convert_audio_to_mp3
 import os
-import traceback\
+import traceback
 
 app = Flask(__name__)
 
