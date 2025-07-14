@@ -49,3 +49,5 @@ def process_recording():
         response = VoiceResponse()
         response.say("Sorry, something went wrong.")
         return Response(str(response), mimetype="text/xml")
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
