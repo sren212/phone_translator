@@ -1,66 +1,54 @@
 from flask import Flask, request, Response
-from twilio.twiml.voice_response import VoiceResponse
-from utils import download_audio, transcribe_with_whisper_api, translate_text, detect_language, convert_audio_to_mp3
-import os
+from twilio.twiml.voice_response import VoiceResponse, Record, Play
+from utils import (
+    download_audio,
+    convert_audio_to_mp3,
+    transcribe_with_whisper_api,
+    translate_text,
+    text_to_speech_twilio
+)
 import traceback
 
 app = Flask(__name__)
 
 @app.route("/", methods=["GET"])
-def home():
-    return "AI Interpreter app is running!"
+def index():
+    return "AI Interpreter is running."
 
-@app.route("/voice", methods=['POST'])
+@app.route("/voice", methods=["POST"])
 def voice():
     response = VoiceResponse()
-    response.say("Welcome to the AI interpreter. Please begin speaking after the beep.")
+    response.say("Hello, welcome to the AI interpreter. Please speak after the beep.")
     response.record(
         action="/process_recording",
-        max_length=8,
-        play_beep=True,
-        timeout=1,
+        method="POST",
+        max_length=30,
+        timeout=2,
         transcribe=False
     )
     return Response(str(response), mimetype="text/xml")
 
-@app.route("/process_recording", methods=['POST'])
+@app.route("/process_recording", methods=["POST"])
 def process_recording():
-    recording_url = request.form['RecordingUrl']
-    print(f"Received recording URL: {recording_url}")
-    
     try:
-        audio_bytes_raw = download_audio(recording_url)
-        audio_bytes_clean = convert_audio_to_mp3(audio_bytes_raw)
-        transcript = transcribe_with_whisper_api(audio_bytes_clean)
-    except Exception as e:
-        print("Whisper transcription error:")
-        traceback.print_exc()
+        recording_url = request.form["RecordingUrl"]
+        audio_bytes = download_audio(recording_url)
+        mp3_bytes = convert_audio_to_mp3(audio_bytes)
+
+        transcript = transcribe_with_whisper_api(mp3_bytes)
+        print("Transcription:", transcript)
+
+        translated_text = translate_text(transcript)
+        print("Translation:", translated_text)
+
+        audio_url = text_to_speech_twilio(translated_text)
+
         response = VoiceResponse()
-        response.say("Sorry, I could not understand you.")
-        response.redirect("/voice")
+        response.play(audio_url)
         return Response(str(response), mimetype="text/xml")
 
-    lang = detect_language(transcript)
-    print(f"Detected language: {lang}")
-    print(f"Original transcript: '{transcript}'")
-
-    if lang.startswith("en"):
-        target_lang = "es"
-        tts_lang = "es-ES"
-    elif lang.startswith("es"):
-        target_lang = "en"
-        tts_lang = "en-US"
-    else:
-        target_lang = "es"
-        tts_lang = "es-ES"
-
-    translated_text = translate_text(transcript, target_lang)
-    print(f"Translated text: '{translated_text}'")
-
-    response = VoiceResponse()
-    response.say(translated_text, language=tts_lang)
-    response.redirect("/voice")
-    return Response(str(response), mimetype="text/xml")
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    except Exception as e:
+        traceback.print_exc()
+        response = VoiceResponse()
+        response.say("Sorry, something went wrong.")
+        return Response(str(response), mimetype="text/xml")

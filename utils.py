@@ -1,62 +1,46 @@
 import requests
-from langdetect import detect
-import os
-from dotenv import load_dotenv
-import io
 from pydub import AudioSegment
+import io
+import openai
+import os
+from twilio.rest import Client
 
-load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def download_audio(recording_url):
-    twilio_sid = os.getenv("TWILIO_SID")
-    twilio_token = os.getenv("TWILIO_AUTH")
-    print(f"SID: {twilio_sid}, Token set: {bool(twilio_token)}")
-    resp = requests.get(recording_url, auth=(twilio_sid, twilio_token))
+    resp = requests.get(recording_url + ".wav")
     resp.raise_for_status()
     return resp.content
 
-def convert_audio_to_mp3(audio_bytes):
-    audio = AudioSegment.from_file(io.BytesIO(audio_bytes))
-    out_io = io.BytesIO()
-    audio.export(out_io, format="mp3")
-    out_io.seek(0)
-    return out_io.read()
+def convert_audio_to_mp3(wav_bytes):
+    audio = AudioSegment.from_wav(io.BytesIO(wav_bytes))
+    buffer = io.BytesIO()
+    audio.export(buffer, format="mp3")
+    return buffer.getvalue()
 
-def transcribe_with_whisper_api(audio_bytes):
-    headers = {
-        "Authorization": f"Bearer {os.getenv('API_KEY_OPENAI')}"
-    }
-    files = {
-        'file': ('audio.mp3', audio_bytes, 'audio/mpeg'),
-        'model': (None, 'whisper-1')
-    }
-    response = requests.post(
-        'https://api.openai.com/v1/audio/transcriptions',
-        headers=headers,
-        files=files
+def transcribe_with_whisper_api(audio_mp3_bytes):
+    response = openai.audio.transcriptions.create(
+        model="whisper-1",
+        file=("audio.mp3", io.BytesIO(audio_mp3_bytes), "audio/mpeg")
     )
-    print("OpenAI API response status:", response.status_code)
-    print("OpenAI API response body:", response.text)
+    return response.text
 
-    response_json = response.json()
-    if 'text' not in response_json:
-        raise ValueError(f"Missing 'text' in response: {response_json}")
-    return response_json['text']
+def translate_text(text, target_lang="es"):
+    response = openai.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": f"Translate the following English text to {target_lang}."},
+            {"role": "user", "content": text}
+        ]
+    )
+    return response.choices[0].message.content.strip()
 
-def translate_text(text, target_lang):
-    url = "https://translate.googleapis.com/translate_a/single"
-    params = {
-        'client': 'gtx',
-        'sl': 'auto',
-        'tl': target_lang,
-        'dt': 't',
-        'q': text
-    }
-    r = requests.get(url, params=params)
-    translated_text = r.json()[0][0][0]
-    print("Google Translate raw response:", r.text)
-    print("Extracted translation:", translated_text)
-    return translated_text
+def text_to_speech_twilio(text):
+    # Create a TwiML Bin-like URL by generating a TwiML file
+    response = VoiceResponse()
+    response.say(text, voice="Polly.Conchita")  # Use a Spanish voice or change language
+    twiml = str(response)
 
-def detect_language(text):
-    return detect(text)
+    # Upload TwiML to a temporary server or prehost translated messages
+    # Here we simulate using Twilio’s <Say>, you can also pre-generate audio and host it
+    return f"https://handler.twilio.com/twiml/EHXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX?Body={text}"
