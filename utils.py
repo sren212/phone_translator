@@ -2,6 +2,8 @@ import requests
 from langdetect import detect
 import os
 from dotenv import load_dotenv
+import io
+from pydub import AudioSegment
 
 load_dotenv()
 
