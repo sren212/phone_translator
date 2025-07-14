@@ -12,7 +12,9 @@ def download_audio(recording_url):
     twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
     twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
     print(f"SID: {twilio_sid}, Token set: {bool(twilio_token)}")
+    print(f"Downloading from: {recording_url}")
     resp = requests.get(recording_url, auth=(twilio_sid, twilio_token))
+    print(f"Status code: {resp.status_code}")
     resp.raise_for_status()
     return resp.content
 
