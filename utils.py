@@ -1,5 +1,4 @@
 import requests
-from pydub import AudioSegment
 import io
 import openai
 import os
