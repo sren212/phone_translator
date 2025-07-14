@@ -4,6 +4,8 @@ import io
 import openai
 import os
 from twilio.rest import Client
+import subprocess
+import tempfile
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -13,10 +15,25 @@ def download_audio(recording_url):
     return resp.content
 
 def convert_audio_to_mp3(wav_bytes):
-    audio = AudioSegment.from_wav(io.BytesIO(wav_bytes))
-    buffer = io.BytesIO()
-    audio.export(buffer, format="mp3")
-    return buffer.getvalue()
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as wav_file:
+        wav_file.write(wav_bytes)
+        wav_file_path = wav_file.name
+
+    mp3_file_path = wav_file_path.replace(".wav", ".mp3")
+
+    subprocess.run([
+        "ffmpeg", "-y",
+        "-i", wav_file_path,
+        mp3_file_path
+    ], check=True)
+
+    with open(mp3_file_path, "rb") as f:
+        mp3_data = f.read()
+
+    os.remove(wav_file_path)
+    os.remove(mp3_file_path)
+
+    return mp3_data
 
 def transcribe_with_whisper_api(audio_mp3_bytes):
     response = openai.audio.transcriptions.create(
