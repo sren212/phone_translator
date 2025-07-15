@@ -4,8 +4,7 @@ from utils import (
     download_audio,
     convert_audio_to_mp3,
     transcribe_with_whisper_api,
-    translate_bidirectional,
-    text_to_speech_twilio
+    translate_bidirectional
 )
 import traceback
 
