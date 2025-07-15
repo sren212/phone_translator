@@ -4,19 +4,62 @@ from utils import (
     download_audio,
     transcribe_with_whisper_api,
     detect_language,
-    translate_bidirectional
+    choose_voice,
+    choose_langcode,
+    translate_text
 )
 import traceback
 
 app = Flask(__name__)
-TARGET_LANG = "Spanish"  # default non-English language
+
+# In-memory storage for language preference per call
+user_preferences = {}
 
 @app.route("/", methods=["GET"])
 def index():
-    return "AI Interpreter is running."
+    return "OK", 200
 
 @app.route("/voice", methods=["POST"])
 def voice():
+    response = VoiceResponse()
+    response.say("Welcome. Please say your preferred language after the beep. For example: Spanish, French, Chinese, or English.")
+    response.record(
+        action="/set_language",
+        method="POST",
+        max_length=5,
+        timeout=3,
+        transcribe=False
+    )
+    return Response(str(response), mimetype="text/xml")
+
+@app.route("/set_language", methods=["POST"])
+def set_language():
+    response = VoiceResponse()
+    call_sid = request.form.get("CallSid")
+    try:
+        recording_url = request.form["RecordingUrl"]
+        audio = download_audio(recording_url)
+        transcript = transcribe_with_whisper_api(audio)
+        print("Language selection utterance:", transcript)
+        lang = detect_language(transcript)
+        print("Detected language:", lang)
+
+        # Fallback logic
+        if lang.startswith("english"):
+            lang = "spanish"
+        user_preferences[call_sid] = lang
+
+        response.say(f"Language set to {lang.capitalize()}. You may begin speaking.")
+    except Exception as e:
+        traceback.print_exc()
+        user_preferences[call_sid] = "spanish"
+        response.say("Sorry, I couldn't understand. Defaulting to Spanish. You may begin speaking.")
+
+    response.redirect("/conversation")
+    return Response(str(response), mimetype="text/xml")
+
+@app.route("/conversation", methods=["POST"])
+def conversation():
     response = VoiceResponse()
     response.say("Please speak after the beep.")
     response.record(
@@ -31,46 +74,37 @@ def voice():
 @app.route("/process_recording", methods=["POST"])
 def process_recording():
     try:
+        call_sid = request.form["CallSid"]
         recording_url = request.form["RecordingUrl"]
-        audio_bytes = download_audio(recording_url)
-
-        transcript = transcribe_with_whisper_api(audio_bytes)
+        audio = download_audio(recording_url)
+        transcript = transcribe_with_whisper_api(audio)
         print("Transcription:", transcript)
 
-        origin_lang = detect_language(transcript)
-        print("Detected language:", origin_lang)
+        preferred = user_preferences.get(call_sid, "spanish")
+        print("Preferred language:", preferred)
 
-        # Translate transcript based on detected language
-        if "english" in origin_lang:
-            translated_text, lang = translate_bidirectional(transcript, TARGET_LANG)
+        if preferred.startswith("english"):
+            target_lang = "English"
+            origin_lang = None
         else:
-            translated_text, lang = translate_bidirectional(transcript, "English")
-            TARGET_LANG = origin_lang
+            target_lang = preferred.capitalize()
+            origin_lang = None
 
-        print(f"Translation: {translated_text}")
+        translated = translate_text(transcript, target_lang, origin_lang)
+        print(f"Translated to {target_lang}:", translated)
 
-        # Choose Polly voice
-        voice = "Polly.Joanna"
-        if lang.lower().startswith("spanish"):
-            voice = "Polly.Conchita"
-        elif lang.lower().startswith("chinese") or lang.lower().startswith("mandarin"):
-            voice = "Polly.Zhiyu"
-        elif lang.lower().startswith("korean"):
-            voice = "Polly.Seoyeon"
-        elif lang.lower().startswith("french"):
-            voice = "Polly.Celine"
+        lang_code = choose_langcode(target_lang)
+        voice = choose_voice(target_lang)
 
-        response = VoiceResponse()
-        response.say(translated_text, language=lang, voice=voice)
-        response.redirect("/voice")
-
-        return Response(str(response), mimetype="text/xml")
-
-    except Exception as e:
+        resp = VoiceResponse()
+        resp.say(translated, language=lang_code, voice=voice)
+        resp.redirect("/conversation")
+        return Response(str(resp), mimetype="text/xml")
+    except Exception:
         traceback.print_exc()
-        response = VoiceResponse()
-        response.say("Sorry, something went wrong.")
-        return Response(str(response), mimetype="text/xml")
+        resp = VoiceResponse()
+        resp.say("Sorry, something went wrong.")
+        return Response(str(resp), mimetype="text/xml")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
