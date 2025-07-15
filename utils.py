@@ -32,7 +32,7 @@ def detect_language(text):
 def translate_text(text, preferred):
     origin_lang = detect_language(text).lower()
     target_lang = preferred
-    if (origin_lang.startswith("english"):
+    if (origin_lang.startswith("english")):
         system_prompt = f"Translate this to {preferred}."
     else:
         system_prompt = f"Translate this to english."
