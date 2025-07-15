@@ -35,7 +35,7 @@ def translate_text(text, target_lang, origin_lang=None):
     if origin_lang:
         messages.append({"role":"system","content":f"Original language: {origin_lang}"})
     messages.append({"role":"user","content":text})
-    resp = client.client.chat.completions.create(
+    resp = client.chat.completions.create(
         model="gpt-4",
         messages=messages
     )
