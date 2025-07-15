@@ -4,9 +4,15 @@ from openai import OpenAI
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def download_audio(url):
+    if not url.endswith('.wav'):
+        url += '.wav'
     sid = os.getenv("TWILIO_ACCOUNT_SID")
     token = os.getenv("TWILIO_AUTH_TOKEN")
-    resp = requests.get(url, auth=(sid, token))
+    for attempt in range(retries):
+        resp = requests.get(url, auth=(sid, token))
+        if resp.status_code == 200:
+            return resp.content
+        time.sleep(delay)
     resp.raise_for_status()
     return resp.content
 
