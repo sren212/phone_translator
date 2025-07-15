@@ -40,9 +40,19 @@ def process_recording():
 
         translated_text, lang = translate_bidirectional(transcript)
         print(f"Detected: {lang}, Translation: {translated_text}")
-
+        
+        voice = "Polly.Joanna"
+        if lang.lower().startswith("spanish"):
+            voice = "Polly.Conchita"
+        elif lang.lower().startswith("chinese") or lang.lower().startswith("mandarin"):
+            voice = "Polly.Zhiyu"
+        elif lang.lower().startswith("korean"):
+            voice = "Polly.Seoyeon"
+        elif lang.lower().startswith("french"):
+            voice = "Polly.Celine"
+        
         response = VoiceResponse()
-        response.say(translated_text, language=lang)
+        response.say(translated_text, language=lang, voice=voice)
         response.redirect("/voice")
 
         return Response(str(response), mimetype="text/xml")

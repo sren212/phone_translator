@@ -74,14 +74,3 @@ def translate_bidirectional(text):
         ]
     )
     return response.choices[0].message.content.strip(), target_lang
-
-def text_to_speech_twilio(text, lang="Spanish"):
-    # Select Twilio-compatible voices
-    if lang.lower().startswith("spanish"):
-        voice = "Polly.Conchita"
-    else:
-        voice = "Polly.Joanna"
-
-    response = VoiceResponse()
-    response.say(text, voice=voice)
-    return str(response)
