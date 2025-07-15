@@ -1,5 +1,7 @@
-import requests, io, os, openai
-openai.api_key = os.getenv("OPENAI_API_KEY")
+import requests, io, os
+from openai import OpenAI
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def download_audio(url):
     sid = os.getenv("TWILIO_ACCOUNT_SID")
@@ -31,7 +33,7 @@ def translate_text(text, target_lang, origin_lang=None):
     if origin_lang:
         messages.append({"role":"system","content":f"Original language: {origin_lang}"})
     messages.append({"role":"user","content":text})
-    resp = openai.ChatCompletion.create(
+    resp = openai.client.chat.completions.create(
         model="gpt-4",
         messages=messages
     )
