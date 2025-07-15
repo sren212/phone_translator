@@ -2,13 +2,14 @@ from flask import Flask, request, Response
 from twilio.twiml.voice_response import VoiceResponse
 from utils import (
     download_audio,
-    convert_audio_to_mp3,
     transcribe_with_whisper_api,
+    detect_language,
     translate_bidirectional
 )
 import traceback
 
 app = Flask(__name__)
+TARGET_LANG = "Spanish"  # default non-English language
 
 @app.route("/", methods=["GET"])
 def index():
@@ -32,14 +33,22 @@ def process_recording():
     try:
         recording_url = request.form["RecordingUrl"]
         audio_bytes = download_audio(recording_url)
-        mp3_bytes = convert_audio_to_mp3(audio_bytes)
 
-        transcript = transcribe_with_whisper_api(mp3_bytes)
+        transcript = transcribe_with_whisper_api(audio_bytes)
         print("Transcription:", transcript)
 
-        translated_text, lang = translate_bidirectional(transcript)
-        print(f"Detected: {lang}, Translation: {translated_text}")
-        
+        origin_lang = detect_language(transcript)
+        print("Detected language:", origin_lang)
+
+        # Translate transcript based on detected language
+        if "english" in origin_lang:
+            translated_text, lang = translate_bidirectional(transcript, TARGET_LANG)
+        else:
+            translated_text, lang = translate_bidirectional(transcript, "English")
+
+        print(f"Translation: {translated_text}")
+
+        # Choose Polly voice
         voice = "Polly.Joanna"
         if lang.lower().startswith("spanish"):
             voice = "Polly.Conchita"
@@ -49,7 +58,7 @@ def process_recording():
             voice = "Polly.Seoyeon"
         elif lang.lower().startswith("french"):
             voice = "Polly.Celine"
-        
+
         response = VoiceResponse()
         response.say(translated_text, language=lang, voice=voice)
         response.redirect("/voice")
