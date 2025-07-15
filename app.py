@@ -42,10 +42,7 @@ def process_recording():
         print(f"Detected: {lang}, Translation: {translated_text}")
 
         response = VoiceResponse()
-        response.say("Translation follows.")
-        response.append(text_to_speech_twilio(translated_text, lang=lang))
-
-        # Loop back to /voice to record next speaker
+        response.say(translated_text, language=lang)
         response.redirect("/voice")
 
         return Response(str(response), mimetype="text/xml")
