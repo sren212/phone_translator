@@ -16,14 +16,14 @@ def transcribe_with_whisper_api(audio):
     return resp.text
 
 def detect_language(text):
-    resp = openai.ChatCompletion.create(
+    response = openai.chat.completions.create(
         model="gpt-4",
         messages=[
-            {"role":"system","content":"Identify the language of this:"},
-            {"role":"user","content":text}
+            {"role": "system", "content": "Identify the language of the following sentence."},
+            {"role": "user", "content": text}
         ]
     )
-    return resp.choices[0].message.content.strip().lower()
+    return response.choices[0].message.content.strip().lower()
 
 def translate_text(text, target_lang, origin_lang=None):
     system_prompt = f"Translate this to {target_lang}."
