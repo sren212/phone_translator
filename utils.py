@@ -8,11 +8,7 @@ def download_audio(url):
         url += '.wav'
     sid = os.getenv("TWILIO_ACCOUNT_SID")
     token = os.getenv("TWILIO_AUTH_TOKEN")
-    for attempt in range(retries):
-        resp = requests.get(url, auth=(sid, token))
-        if resp.status_code == 200:
-            return resp.content
-        time.sleep(delay)
+    resp = requests.get(url, auth=(sid, token))
     resp.raise_for_status()
     return resp.content
 
