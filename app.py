@@ -45,6 +45,7 @@ def process_recording():
             translated_text, lang = translate_bidirectional(transcript, TARGET_LANG)
         else:
             translated_text, lang = translate_bidirectional(transcript, "English")
+            TARGET_LANG = origin_lang
 
         print(f"Translation: {translated_text}")
 
