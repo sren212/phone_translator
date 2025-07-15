@@ -31,7 +31,7 @@ def voice():
 @app.route("/process_recording", methods=["POST"])
 def process_recording():
     try:
-        recording_url = request.form["RecordingUrl"] + ".wav"
+        recording_url = request.form["RecordingUrl"]
         audio_bytes = download_audio(recording_url)
         mp3_bytes = convert_audio_to_mp3(audio_bytes)
 
