@@ -32,18 +32,20 @@ def detect_language(text):
 def translate_text(text, preferred):
     origin_lang = detect_language(text).lower()
     target_lang = preferred
-    if (origin_lang.startswith("english")):
-        system_prompt = f"Translate this to {preferred}."
+
+    if origin_lang == target_lang:
+        translated = text
     else:
-        system_prompt = f"Translate this to english."
-        target_lang = "english"
-    messages = [{"role":"system","content":system_prompt}]
-    messages.append({"role":"user","content":text})
-    resp = client.chat.completions.create(
-        model="gpt-4",
-        messages=messages
-    )
-    return resp.choices[0].message.content.strip(), target_lang
+        system_prompt = f"Translate this from {origin_lang} to {target_lang}."
+        resp = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": text}
+            ]
+        )
+    translated = resp.choices[0].message.content.strip()
+    return translated, target_lang
 
 def choose_voice(target_lang):
     t = target_lang.lower()
