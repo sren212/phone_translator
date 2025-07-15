@@ -3,7 +3,6 @@ from twilio.twiml.voice_response import VoiceResponse
 from utils import (
     download_audio,
     transcribe_with_whisper_api,
-    detect_language,
     choose_voice,
     choose_langcode,
     translate_text
@@ -12,7 +11,6 @@ import traceback
 
 app = Flask(__name__)
 
-# In-memory storage for language preference per call
 user_preferences = {}
 
 @app.route("/", methods=["GET"])
@@ -42,7 +40,6 @@ def set_language():
         lang = transcribe_with_whisper_api(audio)
         print("Detected language:", lang)
 
-        # Fallback logic
         if lang.startswith("english"):
             lang = "spanish"
         user_preferences[call_sid] = lang
@@ -80,15 +77,8 @@ def process_recording():
 
         preferred = user_preferences.get(call_sid, "spanish")
         print("Preferred language:", preferred)
-
-        if preferred.startswith("english"):
-            target_lang = "English"
-            origin_lang = None
-        else:
-            target_lang = preferred.capitalize()
-            origin_lang = None
-
-        translated = translate_text(transcript, target_lang, origin_lang)
+        
+        translated, target_lang = translate_text(transcript, preferred)
         print(f"Translated to {target_lang}:", translated)
 
         lang_code = choose_langcode(target_lang)
