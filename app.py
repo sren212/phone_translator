@@ -22,7 +22,7 @@ def index():
 @app.route("/voice", methods=["POST"])
 def voice():
     response = VoiceResponse()
-    response.say("Welcome. Please say your preferred language after the beep. For example: Spanish, French, Chinese, or English.")
+    response.say("Welcome. Please say your preferred language after the beep.")
     response.record(
         action="/set_language",
         method="POST",
@@ -39,9 +39,7 @@ def set_language():
     try:
         recording_url = request.form["RecordingUrl"]
         audio = download_audio(recording_url)
-        transcript = transcribe_with_whisper_api(audio)
-        print("Language selection utterance:", transcript)
-        lang = detect_language(transcript)
+        lang = transcribe_with_whisper_api(audio)
         print("Detected language:", lang)
 
         # Fallback logic
