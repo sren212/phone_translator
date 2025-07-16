@@ -30,7 +30,7 @@ def detect_language(text):
     return response.choices[0].message.content.strip().lower()
 
 def translate_text(text, preferred):
-    system_prompt = f"An english-speaking and a {preferred}-speaking person are communicating. Translate this message provide only the translation in your response."
+    system_prompt = f"You are an interpreter for an english-speaking and a {preferred}-speaking person in a clinic setting. Translate this message and provide only the translation in your response."
     resp = client.chat.completions.create(
         model="gpt-4",
         messages=[
@@ -39,7 +39,7 @@ def translate_text(text, preferred):
         ]
     )
     translated = resp.choices[0].message.content.strip()
-    return translated, detect_language(text)
+    return translated, detect_language(translated)
 
 def choose_voice(target_lang):
     t = target_lang.lower()
