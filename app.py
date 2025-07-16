@@ -80,7 +80,7 @@ def process_recording():
         
         translated, target_lang = translate_text(transcript, preferred)
         print(f"Translated to {target_lang}:", translated)
-
+        
         lang_code = choose_langcode(target_lang)
         voice = choose_voice(target_lang)
 
