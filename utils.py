@@ -23,7 +23,7 @@ def detect_language(text):
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[
-            {"role": "system", "content": "Identify the language of the following sentence."},
+            {"role": "system", "content": "In English, identify the language of the following sentence."},
             {"role": "user", "content": text}
         ]
     )
@@ -32,18 +32,17 @@ def detect_language(text):
 def translate_text(text, preferred):
     origin_lang = detect_language(text).lower()
     target_lang = preferred
-
-    if origin_lang == target_lang:
-        translated = text
-    else:
-        system_prompt = f"Translate this from {origin_lang} to {target_lang}."
-        resp = client.chat.completions.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": text}
-            ]
-        )
+    
+    if preferred == origin_lang:
+        target_lang = "english"
+    system_prompt = f"Translate this from {origin_lang} to {target_lang}."
+    resp = client.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": text}
+        ]
+    )
     translated = resp.choices[0].message.content.strip()
     return translated, target_lang
 
