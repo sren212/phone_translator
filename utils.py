@@ -40,7 +40,7 @@ def detect_language(text):
 def translate_text(text, preferred):
     system_prompt = f"You are an interpreter for an english-speaking and a {preferred}-speaking person in a clinic setting. Translate this message and provide only the translation in your response."
     resp = client.chat.completions.create(
-        model="text-davinci-003",
+        model="gpt-4",
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": text}
