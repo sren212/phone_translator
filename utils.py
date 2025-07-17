@@ -7,19 +7,19 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 def download_audio(url):
     if not url.endswith('.wav'):
         url += '.wav'
-    resp = ""
+    
+    sid = os.getenv("TWILIO_ACCOUNT_SID")
+    token = os.getenv("TWILIO_AUTH_TOKEN")
+
     for i in range(3):
         try:
-            sid = os.getenv("TWILIO_ACCOUNT_SID")
-            token = os.getenv("TWILIO_AUTH_TOKEN")
             resp = requests.get(url, auth=(sid, token))
+            resp.raise_for_status()
+            return resp.content
         except Exception as e:
             if i == 2:
                 raise e
             time.sleep(1)
-        else:
-            break
-    return resp.content
 
 def transcribe_with_whisper_api(audio):
     resp = client.audio.transcriptions.create(
