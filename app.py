@@ -50,7 +50,7 @@ def set_language():
         user_preferences[call_sid] = "spanish"
         response.say("Sorry, I couldn't understand. Defaulting to Spanish. You may begin speaking.")
 
-    response.redirect("/conversation")
+    response.redirect("/conversation", method="POST")
     return Response(str(response), mimetype="text/xml")
 
 @app.route("/conversation", methods=["POST"])
@@ -70,7 +70,7 @@ def conversation():
 def process_recording():
     try:
         call_sid = request.form["CallSid"]
-        recording_url = request.form["RecordingUrl"]
+        recording_url = request.form.get("RecordingUrl")
         audio = download_audio(recording_url)
         transcript = transcribe_with_whisper_api(audio)
         print("Transcription:", transcript)

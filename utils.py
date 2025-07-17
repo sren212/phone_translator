@@ -1,4 +1,5 @@
 import requests, io, os
+import time
 from openai import OpenAI
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -6,16 +7,23 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 def download_audio(url):
     if not url.endswith('.wav'):
         url += '.wav'
-    sid = os.getenv("TWILIO_ACCOUNT_SID")
-    token = os.getenv("TWILIO_AUTH_TOKEN")
-    resp = requests.get(url, auth=(sid, token))
-    resp.raise_for_status()
+    for i in range(3):
+        try:
+            sid = os.getenv("TWILIO_ACCOUNT_SID")
+            token = os.getenv("TWILIO_AUTH_TOKEN")
+            resp = requests.get(url, auth=(sid, token))
+        except Exception as e:
+            if i == 2:
+                raise e
+            time.sleep(1)
+        else:
+            break
     return resp.content
 
 def transcribe_with_whisper_api(audio):
     resp = client.audio.transcriptions.create(
         model="whisper-1",
-        file=("audio.wav", io.BytesIO(audio), "audio/wav")
+        file=io.BytesIO(audio)
     )
     return resp.text
 
@@ -32,7 +40,7 @@ def detect_language(text):
 def translate_text(text, preferred):
     system_prompt = f"You are an interpreter for an english-speaking and a {preferred}-speaking person in a clinic setting. Translate this message and provide only the translation in your response."
     resp = client.chat.completions.create(
-        model="gpt-4",
+        model="text-davinci-003",
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": text}
@@ -46,15 +54,23 @@ def choose_voice(target_lang):
     return (
         "Polly.Conchita" if t.startswith("spanish") else
         "Polly.Zhiyu" if t.startswith("chinese") else
+        "Polly.Hiujin" if t.startswith("cantonese") else
         "Polly.Seoyeon" if t.startswith("korean") else
         "Polly.Celine" if t.startswith("french") else
+        "Polly.Aditi" if t.startswith("hindi") else
+        "Polly.Zeina" if t.startswith("arabic") else
         "Polly.Joanna"
     )
 
 def choose_langcode(target_lang):
     t = target_lang.lower()
-    if t.startswith("spanish"): return "es-ES"
-    if t.startswith("chinese"): return "zh-CN"
-    if t.startswith("korean"):  return "ko-KR"
-    if t.startswith("french"):  return "fr-FR"
-    return "en-US"
+    return (
+        "es-ES" if t.startswith("spanish") else
+        "zh-CN" if t.startswith("chinese") else
+        "yue-CN" if t.startswith("cantonese") else
+        "ko-KR" if t.startswith("korean") else
+        "fr-FR" if t.startswith("french") else
+        "hi-IN" if t.startswith("hindi") else
+        "arb" if t.startswith("arabic") else
+        "en-US"
+    )
