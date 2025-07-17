@@ -70,7 +70,7 @@ def conversation():
 def process_recording():
     try:
         call_sid = request.form["CallSid"]
-        recording_url = request.form.get("RecordingUrl")
+        recording_url = request.form["RecordingUrl"]
         audio = download_audio(recording_url)
         transcript = transcribe_with_whisper_api(audio)
         print("Transcription:", transcript)

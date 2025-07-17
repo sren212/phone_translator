@@ -7,6 +7,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 def download_audio(url):
     if not url.endswith('.wav'):
         url += '.wav'
+    resp = ""
     for i in range(3):
         try:
             sid = os.getenv("TWILIO_ACCOUNT_SID")
