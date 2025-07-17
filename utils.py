@@ -23,7 +23,7 @@ def download_audio(url):
 def transcribe_with_whisper_api(audio):
     resp = client.audio.transcriptions.create(
         model="whisper-1",
-        file=io.BytesIO(audio)
+        file=("audio.wav", io.BytesIO(audio), "audio/wav")
     )
     return resp.text
 
