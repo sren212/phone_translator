@@ -94,5 +94,11 @@ def process_recording():
         resp.say("Sorry, something went wrong.")
         return Response(str(resp), mimetype="text/xml")
 
+"""
+# render
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
+"""
+
+# microsoft azure
+app = app
