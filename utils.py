@@ -1,19 +1,29 @@
 import requests, io, os, time
+from twilio.rest import Client
 from openai import OpenAI
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+twilio_client = Client(os.getenv("TWILIO_ACCOUNT_SID"), os.getenv("TWILIO_AUTH_TOKEN"))
 
+# downloads audio and then deletes it
 def download_audio(url):
     if not url.endswith('.wav'):
         url += '.wav'
     
     sid = os.getenv("TWILIO_ACCOUNT_SID")
     token = os.getenv("TWILIO_AUTH_TOKEN")
+    recording_sid = url.split("/")[-1].replace(".wav", "")
 
     for i in range(3):
         try:
             resp = requests.get(url, auth=(sid, token))
             resp.raise_for_status()
+            
+            try:
+                twilio_client.recordings(recording_sid).delete()
+            except Exception as e:
+                print(f"Warning: Failed to delete recording {recording_sid}: {e}")
+            
             return resp.content
         except Exception as e:
             if i == 2:
