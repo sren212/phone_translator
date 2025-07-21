@@ -1,5 +1,4 @@
-import requests, io, os
-import time
+import requests, io, os, time
 from openai import OpenAI
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -32,7 +31,7 @@ def detect_language(text):
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[
-            {"role": "system", "content": "In English, identify the language of the following sentence in one word. Do not form a complete sentence."},
+            {"role": "system", "content": "In English, identify the language of the following sentence in exactly one word."},
             {"role": "user", "content": text}
         ]
     )

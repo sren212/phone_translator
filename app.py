@@ -38,17 +38,14 @@ def set_language():
         recording_url = request.form["RecordingUrl"]
         audio = download_audio(recording_url)
         lang = transcribe_with_whisper_api(audio)
-        print("Detected language:", lang)
 
-        if lang.startswith("english"):
-            lang = "spanish"
         user_preferences[call_sid] = lang
 
         response.say(f"Language set to {lang.capitalize()}. You may begin speaking.")
     except Exception as e:
         traceback.print_exc()
         user_preferences[call_sid] = "spanish"
-        response.say("Sorry, I couldn't understand. Defaulting to Spanish. You may begin speaking.")
+        response.say("Sorry, I couldn't understand. Defaulting to Spanish.")
 
     response.redirect("/conversation", method="POST")
     return Response(str(response), mimetype="text/xml")
@@ -73,13 +70,10 @@ def process_recording():
         recording_url = request.form["RecordingUrl"]
         audio = download_audio(recording_url)
         transcript = transcribe_with_whisper_api(audio)
-        print("Transcription:", transcript)
 
         preferred = user_preferences.get(call_sid, "spanish")
-        print("Preferred language:", preferred)
         
         translated, target_lang = translate_text(transcript, preferred)
-        print(f"Translated to {target_lang}:", translated)
         
         lang_code = choose_langcode(target_lang)
         voice = choose_voice(target_lang)
