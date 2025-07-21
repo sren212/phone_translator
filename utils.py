@@ -48,7 +48,7 @@ def detect_language(text):
     return response.choices[0].message.content.strip().lower()
 
 def translate_text(text, preferred):
-    system_prompt = f"You are an interpreter for an english-speaking and a {preferred}-speaking person in a clinic setting. Translate this message and provide only the translation in your response."
+    system_prompt = f"You are a medical interpreter. The following transcript is from a conversation between an english-speaking person and a {preferred}-speaking person. Translate this message to the correct language and provide only the translation in your response."
     resp = client.chat.completions.create(
         model="gpt-4",
         messages=[
