@@ -15,7 +15,7 @@ The interpreter enables staff to **communicate with patients in their preferred 
 2. **Recording**: The call is recorded through [Twilio](https://www.twilio.com/).
 3. **Transcription**: The audio is transcribed using [OpenAI Whisper](https://platform.openai.com/docs/guides/speech-to-text/whisper).
 4. **Translation**: The transcription is translated to the other party’s language using [OpenAI GPT-4](https://platform.openai.com/docs/guides/gpt).
-5. **Text-to-Speech (TTS)**: The translated text is spoken aloud using [Azure Cognitive Services](https://azure.microsoft.com/en-us/products/cognitive-services/text-to-speech).
+5. **Text-to-Speech (TTS)**: The translated text is spoken aloud using [Twilio Text to Speech](https://www.twilio.com/docs/voice/twiml/say/text-speech).
 6. **Secure Deletion**: Recordings are deleted from Twilio after transcription to ensure zero data retention.
 
 ---
